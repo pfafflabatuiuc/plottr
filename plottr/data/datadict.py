@@ -1353,8 +1353,8 @@ def combine_datadicts(*dicts: DataDict) -> Union[DataDictBase, DataDict]:
 def datastructure_from_string(description: str) -> DataDict:
     """Construct a DataDict from a string description.
 
-    Examples
-    --------
+    **Examples**
+
     * ``"data[mV](x, y)"`` results in a datadict with one dependent ``data`` with unit ``mV`` and
       two independents, ``x`` and ``y``, that do not have units.
 
@@ -1365,8 +1365,8 @@ def datastructure_from_string(description: str) -> DataDict:
 
     * ``"data_1[mV](x[mV], y[nT]); data_2[mA](x[mV])"``. Same result as the previous example.
 
-    Rules
-    -----
+    **Rules**
+
     We recognize descriptions of the form ``field1[unit1](ax1, ax2, ...); field1[unit2](...); ...``.
 
     * field names (like ``field1`` and ``field2`` above) have to start with a letter, and may contain
