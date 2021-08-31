@@ -46,17 +46,17 @@ class PlotNode(Node):
 
         Makes sure that newly arriving data is sent to plot GUI elements.
 
-        :param w: container to connect the node to.
+        :param w: Container to connect the node to.
         """
         self.plotWidgetContainer = w
         self.newPlotData.connect(self.plotWidgetContainer.setData)
 
     def process(self, dataIn: Optional[DataDictBase] = None) -> Dict[str, Optional[DataDictBase]]:
         """Emits the :attr:`newPlotData` signal when called.
-        Note: does not call the parent method :meth:`plottr.node.node.Node.process`.
+        Note: Does not call the parent method :meth:`plottr.node.node.Node.process`.
 
-        :param dataIn: input data
-        :returns: input data as is: ``{dataOut: dataIn}``
+        :param dataIn: Input data.
+        :returns: Input data as is: ``{dataOut: dataIn}``.
         """
         self.newPlotData.emit(dataIn)
         return dict(dataOut=dataIn)
@@ -90,7 +90,7 @@ class PlotWidgetContainer(QtWidgets.QWidget):
 
         Makes sure that the added widget receives new data.
 
-        :param widget: plot widget
+        :param widget: plot widget.
         """
 
         # TODO: disconnect everything, make sure old widget is garbage collected
@@ -108,10 +108,10 @@ class PlotWidgetContainer(QtWidgets.QWidget):
             self.plotWidget.setData(self.data)
 
     def setData(self, data: DataDictBase) -> None:
-        """set Data. If a plot widget is defined, call the widget's
+        """Set Data. If a plot widget is defined, call the widget's
         :meth:`PlotWidget.setData` method.
 
-        :param data: input data to be plotted.
+        :param data: Input data to be plotted.
         """
         self.data = data
         if self.plotWidget is not None:
@@ -147,17 +147,17 @@ class PlotWidget(QtWidgets.QWidget):
     def setData(self, data: Optional[DataDictBase]) -> None:
         """Set data. Use this to trigger plotting.
 
-        :param data: data to be plotted.
+        :param data: Data to be plotted.
         """
         self.data = data
         self.dataChanges = self.analyzeData(data)
 
     def analyzeData(self, data: Optional[DataDictBase]) -> Dict[str, bool]:
-        """checks data and compares with previous properties.
+        """Checks data and compares with previous properties.
 
-        :param data: incoming data to compare to already existing data in the object.
-        :return: dictionary with information on what has changed from previous to new data.
-            contains key/value pairs where the key is the property analyzed, and the value is True of False. Keys are:
+        :param data: Incoming data to compare to already existing data in the object.
+        :return: Dictionary with information on what has changed from previous to new data.
+            Contains key/value pairs where the key is the property analyzed, and the value is True of False. Keys are:
 
             * `dataTypeChanged` -- has the data class changed?
             * `dataStructureChanged` -- has the internal structure (data fields, etc) changed?
@@ -198,7 +198,7 @@ class PlotWidget(QtWidgets.QWidget):
     def dataIsComplex(self, dependentName: Optional[str] = None) -> bool:
         """Determine whether our data is complex.
 
-        :param dependentName: name of the dependent to check. if `None`, check all.
+        :param dependentName: Name of the dependent to check. if `None`, check all.
         :return: `True` if data is complex, `False` if not.
         """
         if self.data is None:
@@ -217,51 +217,51 @@ class PlotWidget(QtWidgets.QWidget):
 
 def makeFlowchartWithPlot(nodes: List[Tuple[str, Type[Node]]],
                           plotNodeName: str = 'plot') -> Flowchart:
-    """create a linear FlowChart terminated with a plot node.
+    """Create a linear FlowChart terminated with a plot node.
 
     :param nodes: List of Node classes, in the order they are to be arranged.
-    :param plotNodeName: name of the plot node that will be appended.
-    :return: the resulting FlowChart instance
+    :param plotNodeName: Name of the plot node that will be appended.
+    :return: The resulting FlowChart instance.
     """
     nodes.append((plotNodeName, PlotNode))
     fc = linearFlowchart(*nodes)
     return fc
 
 
-# Types of plots and plottable data
+# Types of plots and plottable data.
 @unique
 class PlotDataType(Enum):
-    """Types of (plottable) data"""
+    """Types of (plottable) data."""
 
-    #: unplottable data
+    #: Unplottable data.
     unknown = auto()
 
-    #: scatter-type data with 1 dependent (data is not on a grid)
+    #: Scatter-type data with 1 dependent (data is not on a grid).
     scatter1d = auto()
 
-    #: line data with 1 dependent (data is on a grid)
+    #: Line data with 1 dependent (data is on a grid).
     line1d = auto()
 
-    #: scatter data with 2 dependents (data is not on a grid)
+    #: Scatter data with 2 dependents (data is not on a grid).
     scatter2d = auto()
 
-    #: grid data with 2 dependents
+    #: Grid data with 2 dependents.
     grid2d = auto()
 
 
 class ComplexRepresentation(LabeledOptions):
     """Options for plotting complex-valued data."""
 
-    #: only real
+    #: Only real.
     real = "Real"
 
-    #: real and imaginary
+    #: Real and imaginary.
     realAndImag = "Real/Imag"
 
-    #: real and imaginary, separated
+    #: Real and imaginary, separated.
     realAndImagSeparate = "Real/Imag (split)"
 
-    #: magnitude and phase
+    #: Magnitude and phase.
     magAndPhase = "Mag/Phase"
 
 
@@ -271,27 +271,27 @@ def determinePlotDataType(data: Optional[DataDictBase]) -> PlotDataType:
 
     Analysis is simply based on number of dependents and data type.
 
-    :param data: data to analyze.
-    :return: type of plot data inferred
+    :param data: Data to analyze.
+    :return: Type of plot data inferred.
     """
     # TODO:
     #   there's probably ways to be more liberal about what can be plotted.
     #   like i can always make a 1d scatter...
 
     # a few things will result in unplottable data:
-    # * wrong data format
+    # * wrong data format.
     if not isinstance(data, DataDictBase):
         return PlotDataType.unknown
 
-    # * incompatible independents
+    # * incompatible independents.
     if not data.axes_are_compatible():
         return PlotDataType.unknown
 
-    # * too few or too many independents
+    # * too few or too many independents.
     if len(data.axes()) < 1 or len(data.axes()) > 2:
         return PlotDataType.unknown
 
-    # * no data to plot
+    # * no data to plot.
     if len(data.dependents()) == 0:
         return PlotDataType.unknown
 
@@ -334,9 +334,9 @@ class PlotItem:
 @dataclass
 class SubPlot:
     """Data class describing a subplot in a :class:`.AutoFigureMaker`."""
-    #: ID of the subplot (unique per figure)
+    #: ID of the subplot (unique per figure).
     id: int
-    #: list of subplot objects (type depends on backend)
+    #: List of subplot objects (type depends on backend).
     axes: Optional[List[Any]] = None
 
 
@@ -369,23 +369,23 @@ class AutoFigureMaker:
 
     def __init__(self) -> None:
 
-        #: subplots to create
+        #: Subplots to create.
         self.subPlots: OrderedDictType[int, SubPlot] = OrderedDict()
 
-        #: items that will be plotted
+        #: Items that will be plotted.
         self.plotItems: OrderedDictType[int, PlotItem] = OrderedDict()
 
-        #: ids of all main plot items (does not contain derived/secondary plot items)
+        #: ids of all main plot items (does not contain derived/secondary plot items).
         self.plotIds: List = []
 
         #: ids of all plot items, incl those who are 'joined' with 'main' plot items.
         self.allPlotIds: List = []
 
-        #: how to represent complex data.
-        #: must be set before adding data to the plot to have an effect.
+        #: How to represent complex data.
+        #: Must be set before adding data to the plot to have an effect.
         self.complexRepresentation: ComplexRepresentation = ComplexRepresentation.realAndImag
 
-        #: whether to combine 1D traces into one plot
+        #: Whether to combine 1D traces into one plot.
         self.combineTraces: bool = False
 
     def __enter__(self) -> "AutoFigureMaker":
@@ -399,7 +399,7 @@ class AutoFigureMaker:
         for id in self.subPlots.keys():
             self._makeSubPlot(id)
 
-    # private methods
+    # Private methods.
     def _makeAxes(self) -> None:
         n = self.nSubPlots()
         for id, axes in zip(range(n), self.makeSubPlots(n)):
@@ -505,7 +505,7 @@ class AutoFigureMaker:
     def nSubPlots(self) -> int:
         """Count the subplots in the figure.
 
-        :return: number of subplots
+        :return: Number of subplots.
         """
         ids = []
         for id, item in self.plotItems.items():
@@ -515,7 +515,7 @@ class AutoFigureMaker:
     def subPlotItems(self, subPlotId: int) -> OrderedDictType[int, PlotItem]:
         """Get items in a given subplot.
 
-        :param subPlotId: ID of the subplot
+        :param subPlotId: ID of the subplot.
         :return: Dictionary with all plot items and their ids.
         """
         items = OrderedDict()
@@ -528,7 +528,7 @@ class AutoFigureMaker:
         """Get the data labels for a given subplot.
 
         :param subPlotId: ID of the subplot.
-        :return: a list with one element per plot item in the subplot.
+        :return: A list with one element per plot item in the subplot.
             Each element contains a list of the labels for that item.
         """
         ret: List[List[str]] = []
@@ -548,11 +548,11 @@ class AutoFigureMaker:
                 **plotOptions: Any) -> int:
         """Add data to the figure.
 
-        :param data: data arrays describing the plot (one or more independents, one dependent)
-        :param join: ID of a plot item the new item should be shown together with in the same subplot
-        :param labels: list of labels for the data arrays
-        :param plotDataType: what kind of plot data the supplied data contains.
-        :param plotOptions: options (as kwargs) to be passed to the actual plot functions (depends on the backend)
+        :param data: Data arrays describing the plot (one or more independents, one dependent).
+        :param join: ID of a plot item the new item should be shown together with in the same subplot.
+        :param labels: List of labels for the data arrays.
+        :param plotDataType: What kind of plot data the supplied data contains.
+        :param plotOptions: Options (as kwargs) to be passed to the actual plot functions (depends on the backend).
         :return: ID of the new plot item.
         """
 
@@ -588,7 +588,7 @@ class AutoFigureMaker:
 
     def previousPlotId(self) -> Optional[int]:
         """Get the ID of the most recently added plot item.
-        :return: the ID.
+        :return: The ID.
         """
         if not len(self.plotIds) > 0:
             return None
@@ -599,10 +599,10 @@ class AutoFigureMaker:
             return None
 
     def findPlotIndexInSubPlot(self, plotId: int) -> int:
-        """find the index of a plot in its subplot
+        """Find the index of a plot in its subplot.
 
-        :param plotId: plot ID to check
-        :return: index at which the plot is located in its subplot.
+        :param plotId: Plot ID to check.
+        :return: Index at which the plot is located in its subplot.
         """
         if plotId not in self.allPlotIds:
             raise ValueError("Plot ID not found.")
@@ -612,10 +612,10 @@ class AutoFigureMaker:
         return itemsInSubPlot.index(plotId)
 
     def plotIdsInSubPlot(self, subPlotId: int) -> List[int]:
-        """return all plot IDs in a given subplot
+        """Return all plot IDs in a given subplot.
 
-        :param subPlotId: ID of the subplot
-        :return: list of plot IDs
+        :param subPlotId: ID of the subplot.
+        :return: List of plot IDs.
         """
         itemsInSubPlot = [i for i in self.allPlotIds if self.plotItems[i].subPlot == subPlotId]
         return itemsInSubPlot
@@ -623,8 +623,8 @@ class AutoFigureMaker:
     def dataDimensionsInSubPlot(self, subPlotId: int) -> Dict[int, int]:
         """Determine what the data dimensions are in a subplot.
 
-        :param subPlotId: ID of the subplot
-        :return: dictionary with plot id as key, data dimension (i.e., number of independents) as value.
+        :param subPlotId: ID of the subplot.
+        :return: Dictionary with plot id as key, data dimension (i.e., number of independents) as value.
         """
         ret: Dict[int, int] = {}
         for plotId in self.plotIdsInSubPlot(subPlotId):
@@ -636,8 +636,8 @@ class AutoFigureMaker:
         """Generate the subplots. Called after all data has been added.
         Must be implemented by an inheriting class.
 
-        :param nSubPlots: number of subplots
-        :return: return values of the subplot generation methods.
+        :param nSubPlots: Number of subplots.
+        :return: Return values of the subplot generation methods.
         """
         raise NotImplementedError
 
@@ -655,7 +655,7 @@ class AutoFigureMaker:
         """Plot an item.
         Must be implemented by an inheriting class.
 
-        :param plotItem: the item to plot.
+        :param plotItem: The item to plot.
         :return: Depends on the inheriting class.
         """
         raise NotImplementedError

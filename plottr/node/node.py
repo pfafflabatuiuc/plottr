@@ -28,10 +28,10 @@ def updateOption(optName: Optional[str] = None) -> Callable[[Callable[[R, S], T]
     """Decorator for property setters that are handy for user options.
 
     Property setters in nodes that are decorated with this will do two things:
-    * call ``Node.update``, in order to update the flowchart.
-    * if there is a UI, we call the matching ``optSetter`` function.
+    * Call ``Node.update``, in order to update the flowchart.
+    * If there is a UI, we call the matching ``optSetter`` function.
 
-    :param optName: name of the property.
+    :param optName: Name of the property.
     """
 
     def decorator(func: Callable[[R, S], T]) -> Callable[[R, S], T]:
@@ -85,7 +85,7 @@ def emitGuiUpdate(signalName: str) -> Callable[[Callable[..., Any]], Callable[..
     is not ``True``, i.e., if the option change was `not` caused by a
     function decorated with ``updateGuiFromNode``.
 
-    :param signalName: name of the signal to emit.
+    :param signalName: Name of the signal to emit.
     """
 
     def decorator(func: Callable[..., Any]) -> Callable[..., None]:
@@ -125,41 +125,41 @@ class Node(NodeBase):
     #: Whether or not to automatically set up a UI widget.
     useUi = True
 
-    #: Whether the ui should be visible by default
+    #: Whether the ui should be visible by default.
     uiVisibleByDefault = False
 
     #: A signal to notify the UI of option changes
     #: arguments is a dictionary of options and new values.
     optionChangeNotification = Signal(dict)
 
-    #: signal emitted when available data axes change
-    #: emits a the list of names of new axes
+    #: Signal emitted when available data axes change
+    #: emits a the list of names of new axes.
     dataAxesChanged = Signal(list)
 
-    #: signal emitted when any available data fields change (dep. and indep.)
-    #: emits a the list of names of new axes
+    #: Signal emitted when any available data fields change (dep. and indep.)
+    #: emits a the list of names of new axes.
     dataFieldsChanged = Signal(list)
 
-    #: signal emitted when data type changes
+    #: Signal emitted when data type changes.
     dataTypeChanged = Signal(object)
 
-    #: signal emitted when data structure changes (fields, or dtype)
+    #: Signal emitted when data structure changes (fields, or dtype).
     dataStructureChanged = Signal(object)
 
-    #: signal emitted when data shapes change
+    #: Signal emitted when data shapes change.
     dataShapesChanged = Signal(dict)
 
-    #: when data structure changes, emits (structure, shapes, type)
+    #: When data structure changes, emits (structure, shapes, type).
     newDataStructure = Signal(object, object, object)
 
-    #: developer flag for whether we actually want to raise of use the logging
-    #: system
+    #: Developer flag for whether we actually want to raise of use the logging
+    #: system.
     _raiseExceptions = False
 
     def __init__(self, name: str):
         """Create a new instance of the Node.
 
-        :param name: name of the instance.
+        :param name: Name of the instance.
         """
         super().__init__(name, terminals=self.__class__.terminals)
 
@@ -177,7 +177,7 @@ class Node(NodeBase):
             self.ui = None
 
     def setupUi(self) -> None:
-        """ setting up the UI widget.
+        """ Setting up the UI widget.
 
         Gets called automatically in the node initialization.
         Automatically connect the UIs methods to signal option values.
@@ -199,10 +199,10 @@ class Node(NodeBase):
     def setOption(self, nameAndVal: Tuple[str, Any]) -> None:
         """Set an option.
 
-        name is the name of the property, not the string used for referencing
+        Name is the name of the property, not the string used for referencing
         (which could in principle be different).
 
-        :param nameAndVal: tuple of option name and new value
+        :param nameAndVal: Tuple of option name and new value.
         """
         name, val = nameAndVal
         setattr(self, name, val)
@@ -227,9 +227,9 @@ class Node(NodeBase):
             self.logger().error(err)
 
     def logger(self) -> Logger:
-        """Get a logger for this node
+        """Get a logger for this node.
 
-        :return: logger with a name that can be traced back easily to this node.
+        :return: Logger with a name that can be traced back easily to this node.
         """
         name = f"{self.__module__}.{self.__class__.__name__}.{self.name()}"
         logger = log.getLogger(name)
@@ -237,12 +237,12 @@ class Node(NodeBase):
         return logger
 
     def validateOptions(self, data: DataDictBase) -> bool:
-        """Validate the user options
+        """Validate the user options.
 
         Does nothing in this base implementation. Can be reimplemented by any
         inheriting class.
 
-        :param data: the data to verify the options against.
+        :param data: The data to verify the options against.
         """
         return True
 
@@ -328,17 +328,17 @@ class NodeWidget(QtWidgets.QWidget):
     :attr:`plottr.node.node.NodeWidget.optSetters` for a widget class.
     """
 
-    #: icon for this node
+    #: Icon for this node.
     icon: Optional[QtGui.QIcon] = None
 
-    #: preferred location of the widget when used as dock widget
+    #: Preferred location of the widget when used as dock widget.
     preferredDockWidgetArea = QtCore.Qt.LeftDockWidgetArea
 
-    #: signal (args: object)) to emit to notify the node of a (changed)
+    #: Signal (args: object)) to emit to notify the node of a (changed)
     #: user option.
     optionToNode = Signal(object)
 
-    #: signal (args: (object)) all options to the node.
+    #: Signal (args: (object)) all options to the node.
     allOptionsToNode = Signal(object)
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None,
@@ -362,7 +362,7 @@ class NodeWidget(QtWidgets.QWidget):
             self.setLayout(layout)
 
     def getAllOptions(self) -> Dict[str, Any]:
-        """Return all options as a dictionary"""
+        """Return all options as a dictionary."""
         ret = {}
         for n, f in self.optGetters.items():
             ret[n] = f()
@@ -371,13 +371,13 @@ class NodeWidget(QtWidgets.QWidget):
 
     @updateGuiFromNode
     def setOptionFromNode(self, opt: str, value: Any) -> None:
-        """Set an option from the node
+        """Set an option from the node.
 
         Calls the set function specified in the class' ``optSetters``.
         Decorated with ``@updateGuiFromNode``.
 
-        :param opt: name of the option
-        :param value: value to set
+        :param opt: Name of the option.
+        :param value: Value to set.
         """
         self.optSetters[opt](value)
 
@@ -394,13 +394,13 @@ class NodeWidget(QtWidgets.QWidget):
         Value is determined from the optGetters.
         Decorated with ``@emitGuiUpdate('optionToNode')``.
 
-        :param name: name of the option
+        :param name: Name of the option.
         """
         return name, self.optGetters[name]()
 
     @emitGuiUpdate('allOptionsToNode')
     def signalAllOptions(self) -> Dict[str, Any]:
-        """Return all options as a dictionary
+        """Return all options as a dictionary.
 
         Decorated with ``@emitGuiUpdate('optionToNode')``.
         """
