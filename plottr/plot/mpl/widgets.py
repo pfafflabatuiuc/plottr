@@ -35,11 +35,11 @@ class MPLPlot(FCanvas):
         """
         Create the canvas.
 
-        :param parent: the parent widget
-        :param width: canvas width (inches)
-        :param height: canvas height (inches)
-        :param dpi: figure dpi
-        :param constrainedLayout:
+        :param parent: The parent widget.
+        :param width: Canvas width (inches).
+        :param height: Canvas height (inches).
+        :param dpi: Figure dpi.
+        :param constrainedLayout: Bool. Work in progress :).
         """
 
         self.fig = Figure(figsize=(width, height), dpi=dpi,
@@ -67,12 +67,12 @@ class MPLPlot(FCanvas):
         self.draw()
 
     def clearFig(self) -> None:
-        """clear and reset the canvas."""
+        """Clear and reset the canvas."""
         self.fig.clear()
         self.autosize()
 
     def setRcParams(self) -> None:
-        """apply matplotlibrc config from plottr configuration files."""
+        """Apply matplotlibrc config from plottr configuration files."""
         cfg = plottrconfig().get('main', {}).get('matplotlibrc', {})
         for k, v in cfg.items():
             rcParams[k] = v
@@ -87,7 +87,7 @@ class MPLPlot(FCanvas):
         super().resizeEvent(event)
 
     def setShowInfo(self, show: bool) -> None:
-        """Whether to show additional info in the plot"""
+        """Whether to show additional info in the plot."""
         self._showInfo = show
         self.updateInfo()
 
@@ -132,7 +132,7 @@ class MPLPlot(FCanvas):
         self.draw()
 
     def setFigureInfo(self, info: str) -> None:
-        """Display an info string in the figure"""
+        """Display an info string in the figure."""
         self._info = info
         self.updateInfo()
 
@@ -149,10 +149,10 @@ class MPLPlotWidget(PlotWidget):
     def __init__(self, parent: Optional[PlotWidgetContainer] = None):
         super().__init__(parent=parent)
 
-        #: the plot widget
+        #: The plot widget.
         self.plot = MPLPlot()
 
-        #: the matplotlib toolbar
+        #: The matplotlib toolbar.
         self.mplBar = NavBar(self.plot, self)
 
         self.addMplBarOptions()
@@ -166,7 +166,7 @@ class MPLPlotWidget(PlotWidget):
     def setMeta(self, data: DataDictBase) -> None:
         """Add meta info contained in the data to the figure.
 
-        :param data: data object containing the meta information
+        :param data: Data object containing the meta information
             if meta field ``title`` or ``info`` are in the data object, then
             they will be added as text info to the figure.
         """

@@ -41,7 +41,7 @@ class FigureMaker(BaseFM):
         super().__init__()
         self.fig = fig
 
-        #: what kind of plot we're making. needs to be set before adding data.
+        #: What kind of plot we're making. needs to be set before adding data.
         #: Incompatibility with the data provided will result in failure.
         self.plotType = PlotType.empty
 
@@ -70,8 +70,8 @@ class FigureMaker(BaseFM):
     def makeSubPlots(self, nSubPlots: int) -> List[Axes]:
         """Create subplots (`Axes`). They are arranged on a grid that's close to square.
 
-        :param nSubPlots: number of subplots to make
-        :return: list of matplotlib axes.
+        :param nSubPlots: Number of subplots to make.
+        :return: List of matplotlib axes.
         """
         if nSubPlots > 0:
             nrows = int(nSubPlots ** .5 + .5)
@@ -108,8 +108,8 @@ class FigureMaker(BaseFM):
     def plot(self, plotItem: PlotItem) -> Optional[Union[Artist, List[Artist]]]:
         """Plots data in a PlotItem.
 
-        :param plotItem: the item to plot.
-        :return: matplotlib Artist(s), or ``None`` if nothing was plotted.
+        :param plotItem: The item to plot.
+        :return: Matplotlib Artist(s), or ``None`` if nothing was plotted.
         """
         if self.plotType in [PlotType.singletraces, PlotType.multitraces]:
             return self.plotLine(plotItem)
@@ -148,10 +148,10 @@ class AutoPlotToolBar(QtWidgets.QToolBar):
     the data that AutoPlot has.
     """
 
-    #: signal emitted when the plot type has been changed
+    #: Signal emitted when the plot type has been changed.
     plotTypeSelected = Signal(PlotType)
 
-    #: signal emitted when the complex data option has been changed
+    #: Signal emitted when the complex data option has been changed.
     complexRepresentationSelected = Signal(ComplexRepresentation)
 
     def __init__(self, name: str, parent: Optional[QtWidgets.QWidget] = None):
@@ -237,7 +237,7 @@ class AutoPlotToolBar(QtWidgets.QToolBar):
         self._currentlyAllowedComplexTypes: Tuple[ComplexRepresentation, ...] = ()
 
     def selectPlotType(self, plotType: PlotType) -> None:
-        """makes sure that the selected `plotType` is active (checked), all
+        """Makes sure that the selected `plotType` is active (checked), all
         others are not active.
 
         This method should be used to catch a trigger from the UI.
@@ -245,7 +245,7 @@ class AutoPlotToolBar(QtWidgets.QToolBar):
         If the active plot type has been changed by using this method,
         we emit `plotTypeSelected`.
 
-        :param plotType: type of plot
+        :param plotType: Type of plot.
         """
 
         # deselect all other types
@@ -265,7 +265,7 @@ class AutoPlotToolBar(QtWidgets.QToolBar):
         If the current selection is now disabled, instead select the first
         enabled one.
 
-        :param args: which types of plots can be selected.
+        :param args: Which types of plots can be selected.
         """
 
         if args == self._currentlyAllowedPlotTypes:
@@ -291,7 +291,7 @@ class AutoPlotToolBar(QtWidgets.QToolBar):
         self._currentlyAllowedPlotTypes = args
 
     def selectComplexType(self, comp: ComplexRepresentation) -> None:
-        """makes sure that the selected `comp` is active (checked), all
+        """Makes sure that the selected `comp` is active (checked), all
         others are not active.
         This method should be used to catch a trigger from the UI.
         If the active plot type has been changed by using this method,
@@ -380,7 +380,7 @@ class AutoPlot(MPLPlotWidget):
     def setData(self, data: Optional[DataDictBase]) -> None:
         """Analyses data and determines whether/what to plot.
 
-        :param data: input data
+        :param data: Input data.
         """
         super().setData(data)
         self.plotDataType = determinePlotDataType(data)

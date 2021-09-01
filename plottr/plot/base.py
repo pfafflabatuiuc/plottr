@@ -90,7 +90,7 @@ class PlotWidgetContainer(QtWidgets.QWidget):
 
         Makes sure that the added widget receives new data.
 
-        :param widget: plot widget.
+        :param widget: Plot widget.
         """
 
         # TODO: disconnect everything, make sure old widget is garbage collected
@@ -159,10 +159,10 @@ class PlotWidget(QtWidgets.QWidget):
         :return: Dictionary with information on what has changed from previous to new data.
             Contains key/value pairs where the key is the property analyzed, and the value is True of False. Keys are:
 
-            * `dataTypeChanged` -- has the data class changed?
-            * `dataStructureChanged` -- has the internal structure (data fields, etc) changed?
-            * `dataShapesChanged` -- have the data fields changed shape?
-            * `dataLimitsChanged` -- have the maxima/minima of the data fields changed?
+                * `dataTypeChanged` -- has the data class changed?
+                * `dataStructureChanged` -- has the internal structure (data fields, etc) changed?
+                * `dataShapesChanged` -- have the data fields changed shape?
+                * `dataLimitsChanged` -- have the maxima/minima of the data fields changed?
 
         """
         if data is not None:
@@ -315,19 +315,19 @@ def determinePlotDataType(data: Optional[DataDictBase]) -> PlotDataType:
 @dataclass
 class PlotItem:
     """Data class describing a plot item in :class:`.AutoFigureMaker`."""
-    #: List of data arrays (independents and one dependent)
+    #: List of data arrays (independents and one dependent).
     data: List[Union[np.ndarray, np.ma.MaskedArray]]
-    #: unique ID of the plot item
+    #: Unique ID of the plot item.
     id: int
-    #: ID of the subplot the item will be plotted in
+    #: ID of the subplot the item will be plotted in.
     subPlot: int
-    #: type of plot data (unknown is typically OK)
+    #: Type of plot data (unknown is typically OK).
     plotDataType: PlotDataType = PlotDataType.unknown
-    #: labels of the data arrays
+    #: Labels of the data arrays.
     labels: Optional[List[str]] = None
-    #: options to be passed to plotting functions (depends on backend). Could be formatting options, for example.
+    #: Options to be passed to plotting functions (depends on backend). Could be formatting options, for example.
     plotOptions: Optional[Dict[str, Any]] = None
-    #: return value from the plot command (like matplotlib Artists)
+    #: Return value from the plot command (like matplotlib Artists).
     plotReturn: Optional[Any] = None
 
 

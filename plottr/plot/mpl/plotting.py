@@ -1,5 +1,5 @@
 """
-``plottr.plot.mpl.plotting`` -- Plotting tools (mostly used in Autoplot)
+``plottr.plot.mpl.plotting`` -- Plotting tools (mostly used in Autoplot).
 """
 
 from enum import Enum, auto, unique
@@ -21,22 +21,22 @@ __license__ = 'MIT'
 class PlotType(Enum):
     """Plot types currently supported in Autoplot."""
 
-    #: no plot defined
+    #: No plot defined.
     empty = auto()
 
-    #: a single 1D line/scatter plot per panel
+    #: A single 1D line/scatter plot per panel.
     singletraces = auto()
 
-    #: multiple 1D lines/scatter plots per panel
+    #: Multiple 1D lines/scatter plots per panel.
     multitraces = auto()
 
-    #: image plot of 2D data
+    #: Image plot of 2D data.
     image = auto()
 
-    #: colormesh plot of 2D data
+    #: Colormesh plot of 2D data.
     colormesh = auto()
 
-    #: 2D scatter plot
+    #: 2D scatter plot.
     scatter2d = auto()
 
 
@@ -65,24 +65,21 @@ def colorplot2d(ax: Axes,
                 plotType: PlotType = PlotType.image,
                 axLabels: Tuple[Optional[str], Optional[str], Optional[str]] = ('', '', ''),
                 **kw: Any) -> Optional[AxesImage]:
-    """make a 2d colorplot. what plot is made, depends on `plotType`.
+    """Make a 2d colorplot. What plot is made, depends on `plotType`.
     Any of the 2d plot types in :class:`PlotType` works.
 
-    :param ax: matplotlib subPlots to plot in
-    :param x: x coordinates (meshgrid)
-    :param y: y coordinates (meshgrid)
-    :param z: z data
-    :param plotType: the plot type
-    :param axLabels: labels for the x, y subPlots, and the colorbar.
+    :param ax: Matplotlib subPlots to plot in.
+    :param x: x coordinates (meshgrid).
+    :param y: y coordinates (meshgrid).
+    :param z: z data.
+    :param plotType: The plot type.
+    :param axLabels: Labels for the x, y subPlots, and the colorbar.
 
-    all keywords are passed to the actual plotting functions, depending on the ``plotType``:
+    All keywords are passed to the actual plotting functions, depending on the ``plotType``:
 
-    - :attr:`PlotType.image` --
-        :func:`plotImage`
-    - :attr:`PlotType.colormesh` --
-        :func:`ppcolormesh_from_meshgrid`
-    - :attr:`PlotType.scatter2d` --
-        matplotlib's `scatter`
+    - :attr:`PlotType.image` -- :func:`plotImage`
+    - :attr:`PlotType.colormesh` -- :func:`ppcolormesh_from_meshgrid`
+    - :attr:`PlotType.scatter2d` -- Matplotlib's `scatter`.
     """
     cmap = kw.pop('cmap', rcParams['image.cmap'])
 
@@ -144,10 +141,10 @@ def ppcolormesh_from_meshgrid(ax: Axes, x: np.ndarray, y: np.ndarray,
     Will attempt to fix missing points in the coordinates.
 
     :param ax: subPlots to plot the colormesh into.
-    :param x: x component of the meshgrid coordinates
-    :param y: y component of the meshgrid coordinates
-    :param z: data values
-    :returns: the image returned by `pcolormesh`.
+    :param x: x component of the meshgrid coordinates.
+    :param y: y component of the meshgrid coordinates.
+    :param z: Data values.
+    :returns: The image returned by `pcolormesh`.
 
     Keywords are passed on to `pcolormesh`.
     """
@@ -169,11 +166,11 @@ def plotImage(ax: Axes, x: np.ndarray, y: np.ndarray,
               z: np.ndarray, **kw: Any) -> AxesImage:
     """Plot 2d meshgrid data as image.
 
-    :param ax: matplotlib subPlots to plot the image in.
-    :param x: x coordinates (as meshgrid)
-    :param y: y coordinates
-    :param z: z values
-    :returns: the image object returned by `imshow`
+    :param ax: Matplotlib subPlots to plot the image in.
+    :param x: x coordinates (as meshgrid).
+    :param y: y coordinates.
+    :param z: z values.
+    :returns: The image object returned by `imshow`.
 
     All keywords are passed to `imshow`.
     """

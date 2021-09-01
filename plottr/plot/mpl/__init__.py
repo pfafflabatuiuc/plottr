@@ -31,7 +31,7 @@ Automatic plotting
 Utilities
 ---------
 * :func:`.widgets.figureDialog` --
-  make a dialog window containing a plot widget.
+  Make a dialog window containing a plot widget.
 
 Configuration
 -------------
