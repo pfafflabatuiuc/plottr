@@ -547,7 +547,7 @@ class DDH5Writer(object):
         ...     x = dict(unit='x_unit'),
         ...     y = dict(unit='y_unit', axes=['x'])
         ... )
-        ... with DDH5Writer('./data/', data, name='Test') as writer:
+        ... with DDH5Writer(data, './data/' , name='Test') as writer:
         ...     for x in range(10):
         ...         writer.add_data(x=x, y=x**2)
         Data location: ./data/2020-06-05/2020-06-05T102345_d11541ca-Test/data.ddh5
@@ -559,12 +559,12 @@ class DDH5Writer(object):
         where <ID> is a short identifier string and <name> is the value of parameter `name`.
         To change this, re-implement :meth:`.data_folder` and/or
         :meth:`.create_file_structure`.
-    :param datadict: initial data object. Must contain at least the structure of the
+    :param datadict: Initial data object. Must contain at least the structure of the
         data to be able to use :meth:`add_data` to add data.
-    :param groupname: name of the top-level group in the file container. An existing
+    :param groupname: Name of the top-level group in the file container. An existing
         group of that name will be deleted.
-    :param name: name of this dataset. Used in path/file creation and added as meta data.
-    :param filename: filename to use. defaults to 'data.ddh5'.
+    :param name: Name of this dataset. Used in path/file creation and added as meta data.
+    :param filename: Filename to use. Defaults to 'data.ddh5'.
     """
 
     # TODO: need an operation mode for not keeping data in memory.
