@@ -23,6 +23,7 @@ from ..node.scaleunits import ScaleUnits
 from ..node.grid import DataGridder, GridOption
 from ..node.tools import linearFlowchart
 from ..node.node import Node
+from ..node.histogram import Histogrammer
 from ..plot import PlotNode, makeFlowchartWithPlot, PlotWidget
 from ..plot.pyqtgraph.autoplot import AutoPlot as PGAutoPlot
 from ..utils.misc import unwrap_optional
@@ -248,9 +249,16 @@ class AutoPlotMainWindow(PlotWindow):
         if len(axes) == 1:
             drs = {axes[0]: 'x-axis'}
 
-        self.fc.nodes()['Data selection'].selectedData = selected
-        self.fc.nodes()['Grid'].grid = GridOption.guessShape, {}
-        self.fc.nodes()['Dimension assignment'].dimensionRoles = drs
+        try:
+            self.fc.nodes()['Data selection'].selectedData = selected
+            self.fc.nodes()['Grid'].grid = GridOption.guessShape, {}
+            self.fc.nodes()['Dimension assignment'].dimensionRoles = drs
+        # FIXME: this is maybe a bit excessive, but trying to set all the defaults
+        #   like this can result in many types of errors.
+        #   a better approach would be to inspect the data better and make sure
+        #   we can set defaults reliably.
+        except:
+            pass
         unwrap_optional(self.plotWidget).update()
 
 
@@ -338,6 +346,7 @@ def autoplotDDH5(filepath: str = '', groupname: str = 'data') \
         ('Data loader', DDH5Loader),
         ('Data selection', DataSelector),
         ('Grid', DataGridder),
+        ('Histogram', Histogrammer),
         ('Dimension assignment', XYSelector),
         ('plot', PlotNode)
     )
@@ -345,6 +354,8 @@ def autoplotDDH5(filepath: str = '', groupname: str = 'data') \
     widgetOptions = {
         "Data selection": dict(visible=True,
                                dockArea=QtCore.Qt.TopDockWidgetArea),
+        "Histogram": dict(visible=False,
+                          dockArea=QtCore.Qt.TopDockWidgetArea),
         "Dimension assignment": dict(visible=True,
                                      dockArea=QtCore.Qt.TopDockWidgetArea),
     }

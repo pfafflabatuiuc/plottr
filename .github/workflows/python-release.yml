@@ -13,13 +13,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3.0.0
       with:
         python-version: '3.7'
     - uses: ./.github/actions/install-dependencies-and-plottr
+    - name: Install build deps
+      run: pip install --upgrade build
     - name: Build
       run: |
-        python setup.py sdist bdist_wheel
+        python -m build
     - name: Install Twine
       run: pip install twine
     - name: Publish

@@ -171,7 +171,7 @@ class DimensionAssignmentWidget(QtWidgets.QTreeWidget):
                 for o in opts:
                     combo.addItem(o)
 
-        scaling = np.rint(self.logicalDpiX() / 96.0)
+        scaling = int(np.rint(self.logicalDpiX() / 96.0))
         combo.setMinimumSize(50*scaling, 22*scaling)
         combo.setMaximumHeight(22 * scaling)
         self.setItemWidget(item, 1, combo)
@@ -309,7 +309,7 @@ class DimensionReductionAssignmentWidget(DimensionAssignmentWidget):
                 w.valueChanged.connect(
                     lambda x: self.elementSelectionSliderChange(dim))
 
-                scaling = np.rint(self.logicalDpiX() / 96.0)
+                scaling = int(np.rint(self.logicalDpiX() / 96.0))
                 width = 150 + 50*(scaling - 1)
                 height = 22*scaling
                 w.setMinimumSize(width, height)
@@ -556,9 +556,13 @@ class DimensionReducer(Node):
           the second element is taken as the arg-list.
           The function can be of type :class:`.ReductionMethod`.
         """
-
         delete = []
         for ax, reduction in self._reductions.items():
+
+            if ax not in data.axes():
+                self.logger().warning(f"{ax} is not a known dimension. Removing.")
+                delete.append(ax)
+                continue
 
             if reduction is None:
                 if isinstance(data, MeshgridDataDict):
@@ -599,6 +603,7 @@ class DimensionReducer(Node):
                 self.logger().info(f'Reduction set for axis {ax} is only suited for '
                                    f'grid data. Removing.')
                 delete.append(ax)
+                continue
 
             # set the reduction in the correct format.
             self._reductions[ax] = (fun, arg, kw)
@@ -817,7 +822,6 @@ class XYSelector(DimensionReducer):
             self.optionChangeNotification.emit(
                 {'dimensionRoles': self.dimensionRoles}
             )
-
         return True
 
     def process(
