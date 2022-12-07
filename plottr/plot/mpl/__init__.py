@@ -41,7 +41,7 @@ directories and applies it to matplotlib plots using `pyplot.style.use`.
 """
 import logging
 
-from matplotlib import rcParams, colormaps, pyplot as plt
+# from matplotlib import rcParams, pyplot as plt
 
 from plottr import configFiles
 from .autoplot import AutoPlot, FigureMaker
