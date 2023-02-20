@@ -22,17 +22,20 @@ from typing import List, Optional, Dict, Any, Union, Generator, Iterable, Tuple,
 from functools import partial
 from itertools import cycle
 
-from watchdog.events import FileSystemEvent  # type: ignore[import] # Open PR for mypy in watchdog: https://github.com/gorakhargosh/watchdog/pull/908
+from watchdog.events import FileSystemEvent, FileSystemMovedEvent
 
 from .. import log as plottrlog
 from .. import QtCore, QtWidgets, Signal, Slot, QtGui, plottrPath
+from .. import config_entry as getcfg
+from ..plot.mpl.autoplot import AutoPlot as MPLAutoPlot
+from ..plot.pyqtgraph.autoplot import AutoPlot as PGAutoPlot
 from ..data.datadict_storage import all_datadicts_from_hdf5, datadict_from_hdf5
 from ..data.datadict import DataDict
 from ..utils.misc import unwrap_optional
 from ..apps.watchdog_classes import WatcherClient
 from ..gui.widgets import Collapsible
 from .json_viewer import JsonModel, JsonTreeView
-from ..icons import get_starIcon as get_star_icon, get_trashIcon as get_trash_icon
+from ..icons import get_starIcon as get_star_icon, get_trashIcon as get_trash_icon, get_imageIcon as get_img_icon, get_jsonIcon as get_json_icon, get_mdIcon as get_md_icon
 from .appmanager import AppManager
 
 TIMESTRFORMAT = "%Y-%m-%dT%H%M%S"
@@ -83,6 +86,7 @@ class ContentType(Enum):
     tag = auto()
     json = auto()
     md = auto()
+    py = auto()
     image = auto()
     unknown = auto()
 
@@ -105,6 +109,8 @@ class ContentType(Enum):
             return ContentType.json
         elif extension == 'md':
             return ContentType.md
+        elif extension == 'py':
+            return ContentType.py
         elif extension == 'jpg' or extension == 'jpeg' or extension == 'png' or extension == 'image':
             return ContentType.image
         else:
@@ -127,7 +133,7 @@ class ContentType(Enum):
 
 class SupportedDataTypes:
 
-    valid_types = ['.ddh5', '.md', '.json']
+    valid_types = ['.ddh5', '.md', '.json', '.py']
 
     @classmethod
     def check_valid_data(cls, file_names: Sequence[Union[str, Path]]) -> bool:
@@ -619,7 +625,7 @@ class FileModel(QtGui.QStandardItemModel):
                 del self.main_dictionary[child_item.path]
 
     @Slot(FileSystemEvent)
-    def on_file_moved(self, event: FileSystemEvent) -> None:
+    def on_file_moved(self, event: FileSystemMovedEvent) -> None:
         """
         Gets triggered every time a file is moved or the name of a file (including type) changes.
         """
@@ -2057,20 +2063,14 @@ class FloatingButtonWidget(QtWidgets.QPushButton):
             self.setText(self.edit_text)
 
 
-class TextEditWidget(QtWidgets.QTextEdit):
+class TextViewWidget(QtWidgets.QTextEdit):
     """
-    Widget that displays md files that are in the same folder as a ddh5 file.
-
-    It contains a floating button that allows for editing and saving changes done in the editing phase. Text is not
-    editable before clicking the button.
+    Widget that displays a text-based file such as .md or .py in the same folder as a ddh5 file.
     """
 
     def __init__(self, path: Path, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.path = path
-
-        self.floating_button = FloatingButtonWidget(parent=self)
-        self.floating_button.hide()
 
         size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         self.setSizePolicy(size_policy)
@@ -2085,22 +2085,12 @@ class TextEditWidget(QtWidgets.QTextEdit):
         self.setPlainText(self.file_text)
         document = QtGui.QTextDocument(self.file_text, parent=self)
         self.setDocument(document)
-        self.text_before_edit = self.toPlainText()
-        self.floating_button.save_activated.connect(self.save_activated)
-        self.floating_button.edit_activated.connect(self.edit_activated)
         self.document().contentsChanged.connect(self.size_change)
 
         # Arbitrary threshold height.
         self.max_threshold_height = 211
         self.min_threshold_height = 2
         self.size_change()
-
-    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
-        """
-        Called every time the size of the widget changes. Triggers the change in position of the floating button.
-        """
-        super().resizeEvent(event)
-        self.floating_button.update_position()
 
     def size_change(self) -> None:
         """
@@ -2122,6 +2112,29 @@ class TextEditWidget(QtWidgets.QTextEdit):
             height = round(self.document().size().height())
 
         return QtCore.QSize(width, height)
+
+
+class TextEditWidget(TextViewWidget):
+    """
+    Widget that displays md files that are in the same folder as a ddh5 file.
+
+    It contains a floating button that allows for editing and saving changes done in the editing phase. Text is not
+    editable before clicking the button.
+    """
+
+    def __init__(self, path: Path, *args: Any, **kwargs: Any):
+        super().__init__(path, *args, **kwargs)
+        self.floating_button = FloatingButtonWidget(parent=self)
+        self.floating_button.hide()
+        self.floating_button.save_activated.connect(self.save_activated)
+        self.floating_button.edit_activated.connect(self.edit_activated)
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        """
+        Called every time the size of the widget changes. Triggers the change in position of the floating button.
+        """
+        super().resizeEvent(event)
+        self.floating_button.update_position()
 
     def enterEvent(self, *args: Any, **kwargs: Any) -> None:
         super().enterEvent(*args, **kwargs)
@@ -2713,7 +2726,7 @@ class LoaderWorker(QtCore.QObject):
             if not only_data_files:
                 if file_type == ContentType.tag:
                     data_in['tag_labels'].append(prefix_text + str(file.stem))
-                elif file_type == ContentType.json or file_type == ContentType.md or file_type == ContentType.image:
+                elif file_type in [ContentType.json, ContentType.md, ContentType.py, ContentType.image]:
                     # Check if the files exist.
                     if file.is_file():
                         data_in['extra_files'].append((file, prefix_text + str(file.name), file_type))
@@ -2776,6 +2789,17 @@ class Monitr(QtWidgets.QMainWindow):
         # Setting up main window
         self.main_partition_splitter = QtWidgets.QSplitter()
         self.setCentralWidget(self.main_partition_splitter)
+
+        # Create menu bar
+        menu_bar = self.menuBar()
+        menu = menu_bar.addMenu("Backend")
+        self.backend_group = QtWidgets.QActionGroup(menu)
+        for backend, plotWidgetClass in [("matplotlib", MPLAutoPlot), ("pyqtgraph", PGAutoPlot)]:
+            action = QtWidgets.QAction(backend)
+            action.setCheckable(True)
+            action.setChecked(getcfg('main', 'default-plotwidget') == plotWidgetClass)
+            self.backend_group.addAction(action)
+            menu.addAction(action)
 
         # Set left side layout
         self.left_side_layout = QtWidgets.QVBoxLayout()
@@ -3128,7 +3152,11 @@ class Monitr(QtWidgets.QMainWindow):
         :param path: The path of the ddh5 file that should be displayed.
         :return:
         """
-        self.app_manager.launchApp(self.current_app_id, AUTOPLOTMODULE, AUTOPLOTFUNC, str(path), 'data')
+        if self.backend_group.checkedAction() is None:
+            backend = "default"
+        else:
+            backend = self.backend_group.checkedAction().text()
+        self.app_manager.launchApp(self.current_app_id, AUTOPLOTMODULE, AUTOPLOTFUNC, str(path), 'data', backend)
         self.current_app_id += 1
 
     def add_text_input(self, path: Path) -> None:
@@ -3153,7 +3181,8 @@ class Monitr(QtWidgets.QMainWindow):
                 expand = False
                 if file in self.collapsed_state_dictionary:
                     expand = self.collapsed_state_dictionary[file]
-                json_view = Collapsible(widget=JsonTreeView(path=file), title=name, expanding=expand)
+                json_view = Collapsible(widget=JsonTreeView(path=file), title=name, expanding=expand,
+                                        icon=get_json_icon())
                 json_view.widget.setVisible(expand)
                 json_view.btn.setChecked(expand)
                 if expand:
@@ -3179,7 +3208,24 @@ class Monitr(QtWidgets.QMainWindow):
                 if file in self.collapsed_state_dictionary:
                     expand = self.collapsed_state_dictionary[file]
                 plain_text_edit = Collapsible(widget=TextEditWidget(path=file),
-                                              title=name, expanding=expand)
+                                              title=name, expanding=expand, icon=get_md_icon())
+
+                plain_text_edit.widget.setVisible(expand)
+                plain_text_edit.btn.setChecked(expand)
+                if expand:
+                    plain_text_edit.btn.setText(plain_text_edit.expandedTitle)
+                else:
+                    plain_text_edit.btn.setText(plain_text_edit.collapsedTitle)
+
+                self.file_windows.append(plain_text_edit)
+                self.right_side_layout.addWidget(plain_text_edit)
+
+            elif file_type == ContentType.py:
+                expand = True
+                if file in self.collapsed_state_dictionary:
+                    expand = self.collapsed_state_dictionary[file]
+                plain_text_edit = Collapsible(widget=TextViewWidget(path=file),
+                                              title=name, expanding=expand, icon=get_md_icon())
 
                 plain_text_edit.widget.setVisible(expand)
                 plain_text_edit.btn.setChecked(expand)
@@ -3196,7 +3242,7 @@ class Monitr(QtWidgets.QMainWindow):
                 if file in self.collapsed_state_dictionary:
                     expand = self.collapsed_state_dictionary[file]
                 label = Collapsible(ImageViewer(file, parent=self.right_side_dummy_widget),
-                                    title=name, expanding=expand)
+                                    title=name, expanding=expand, icon=get_img_icon())
                 label.widget.setVisible(expand)
                 label.btn.setChecked(expand)
                 if expand:
